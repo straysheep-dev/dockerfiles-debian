@@ -10,7 +10,7 @@
 FROM debian:latest
 
 # Tells components like systemd they're running in Docker
-ENV container docker
+ENV container=docker
 
 # Variables for headless apt usage
 ARG DEBIAN_FRONTEND=noninteractive
