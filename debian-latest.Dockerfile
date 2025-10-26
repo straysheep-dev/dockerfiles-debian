@@ -21,7 +21,7 @@ RUN apt-get update \
     sudo coreutils systemd systemd-sysv \
     build-essential wget libffi-dev libssl-dev procps \
     python3 python3-pip python3-dev python3-setuptools python3-wheel python3-apt \
-    iproute2 dbus \
+    netplan.io iproute2 dbus \
     && rm -rf /var/lib/apt/lists/* \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
     && apt-get clean
@@ -38,7 +38,19 @@ RUN echo -e "[local]\nlocalhost ansible_connection=local" > /etc/ansible/hosts
 
 # Remove unnecessary getty and udev targets that result in high CPU usage when using
 # multiple containers with Molecule (https://github.com/ansible/molecule/issues/1104)
-RUN rm -f /lib/systemd/system/systemd*udev* \
+#
+# Note that if you need to run netplan commands, you'll need to remove the line below:
+#     `rm -rf /lib/systemd/system/systemd*udev*`
+# and start `systemd-udevd.service`, else `netplan --debug generate` will fail with:
+#     "Failed to send reload request: No such file or directory"
+#
+# In general, network related services may not work as expected in docker's default
+# network.
+# https://docs.docker.com/engine/network/
+# https://netplan.readthedocs.io/en/stable/netplan-generate/#options
+# https://wiki.debian.org/Netplan
+# https://documentation.ubuntu.com/server/explanation/networking/about-netplan/
+RUN rm -rf /lib/systemd/system/systemd*udev* \
     && rm -f /lib/systemd/system/getty.target
 
 # Make sure systemd doesn't start agettys on tty[1-6].
